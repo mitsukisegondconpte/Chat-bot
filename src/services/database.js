@@ -1,6 +1,6 @@
 // ===== SERVICE BASE DE DONNÉES (Supabase) =====
 const { createClient } = require('@supabase/supabase-js');
-const { logger } = require('../src/utils/logger');
+const { logger } = require('../utils/logger');
 
 class DatabaseService {
   constructor() {
@@ -12,7 +12,6 @@ class DatabaseService {
 
   async getOrCreateUser(phone) {
     try {
-      // Chercher l'utilisateur existant
       let { data: user } = await this.supabase
         .from('whatsapp_users')
         .select('*')
@@ -20,7 +19,6 @@ class DatabaseService {
         .single();
 
       if (!user) {
-        // Créer un nouvel utilisateur
         const { data: newUser, error } = await this.supabase
           .from('whatsapp_users')
           .insert({ phone_number: phone })
@@ -35,7 +33,7 @@ class DatabaseService {
       // Mettre à jour last_message_at
       await this.supabase
         .from('whatsapp_users')
-        .update({ 
+        .update({
           last_message_at: new Date().toISOString(),
           message_count: (user.message_count || 0) + 1
         })
@@ -100,8 +98,8 @@ class DatabaseService {
   async updateStats() {
     try {
       const today = new Date().toISOString().split('T')[0];
-      
-      await this.supabase.rpc('increment_stat', { 
+
+      await this.supabase.rpc('increment_stat', {
         stat_date: today,
         stat_field: 'messages_received'
       });
@@ -119,13 +117,12 @@ class DatabaseService {
         .single();
 
       if (!data) return false;
-      
-      // Vérifier si le ban a expiré
+
       if (data.expires_at && new Date(data.expires_at) < new Date()) {
         await this.supabase.from('bans').delete().eq('id', data.id);
         return false;
       }
-      
+
       return true;
     } catch (error) {
       return false;
@@ -148,7 +145,6 @@ class DatabaseService {
         return false;
       }
 
-      // Insérer ou incrémenter
       await this.supabase
         .from('rate_limits')
         .upsert({
@@ -159,7 +155,7 @@ class DatabaseService {
 
       return true;
     } catch (error) {
-      return true; // En cas d'erreur, autoriser
+      return true;
     }
   }
 }
