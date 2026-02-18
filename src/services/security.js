@@ -1,5 +1,5 @@
 // ===== SERVICE SÉCURITÉ =====
-const { logger } = require('../src/utils/logger');
+const { logger } = require('../utils/logger');
 
 class SecurityService {
   constructor(db) {
@@ -16,13 +16,13 @@ class SecurityService {
     // Vérifier le cooldown local (mémoire)
     const lastMessage = this.cooldowns.get(phone);
     const now = Date.now();
-    
+
     if (lastMessage && (now - lastMessage) < this.cooldownSeconds * 1000) {
       return false;
     }
-    
+
     this.cooldowns.set(phone, now);
-    
+
     // Nettoyage périodique du cache cooldown
     if (this.cooldowns.size > 1000) {
       const cutoff = now - 60000;
@@ -37,16 +37,16 @@ class SecurityService {
 
   async banUser(phone, reason, expiresInHours = null) {
     try {
-      const expiresAt = expiresInHours 
+      const expiresAt = expiresInHours
         ? new Date(Date.now() + expiresInHours * 3600000).toISOString()
         : null;
 
       await this.db.supabase
         .from('bans')
-        .upsert({ 
-          phone_number: phone, 
+        .upsert({
+          phone_number: phone,
           reason,
-          expires_at: expiresAt 
+          expires_at: expiresAt
         });
 
       logger.info(`🚫 Utilisateur banni: ${phone} - ${reason}`);
@@ -61,11 +61,35 @@ class SecurityService {
         .from('bans')
         .delete()
         .eq('phone_number', phone);
-      
+
       logger.info(`✅ Utilisateur débanni: ${phone}`);
     } catch (error) {
       logger.error('Erreur unban utilisateur:', error);
     }
+  }
+
+  /**
+   * Filtre le contenu dangereux ou illégal
+   */
+  filterContent(text) {
+    const dangerousPatterns = [
+      /comment\s+(fabriquer|faire|créer)\s+(une?\s+)?(bombe|arme|drogue|explosif)/i,
+      /comment\s+(tuer|empoisonner|hacker|pirater)/i,
+      /contenu\s+(pédo|pédophile|child\s*porn)/i,
+      /suicide\s+(method|comment|how\s*to)/i,
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(text)) {
+        logger.warn('⚠️ Contenu dangereux détecté et filtré');
+        return {
+          blocked: true,
+          reason: 'Ce type de contenu ne peut pas être traité. Si tu traverses un moment difficile, parle à un proche ou appelle un service d\'aide. 💙',
+        };
+      }
+    }
+
+    return { blocked: false };
   }
 }
 
