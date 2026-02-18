@@ -7,7 +7,6 @@ const { logger } = require('./src/utils/logger');
 // Gestion des erreurs non capturées
 process.on('uncaughtException', (err) => {
   logger.error('Erreur non capturée:', err.message);
-  // Continuer à fonctionner si possible
 });
 
 process.on('unhandledRejection', (err) => {
@@ -25,29 +24,31 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-// Variable globale pour le service WhatsApp
 let whatsappService = null;
 
-// Démarrage du bot
 async function main() {
   logger.info('🚀 Démarrage du bot WhatsApp IA...');
-  
+
   // Vérifier les variables d'environnement requises
   const requiredEnv = ['OPENROUTER_API_KEY', 'SUPABASE_URL', 'SUPABASE_KEY'];
   const missing = requiredEnv.filter(key => !process.env[key]);
-  
+
   if (missing.length > 0) {
     logger.error(`❌ Variables manquantes: ${missing.join(', ')}`);
     logger.error('Configurez le fichier .env et redémarrez.');
     process.exit(1);
   }
-  
+
+  // Vérifier HuggingFace (optionnel mais recommandé)
+  if (!process.env.HUGGINGFACE_API_KEY) {
+    logger.warn('⚠️ HUGGINGFACE_API_KEY non définie — fallback IA et multimodal désactivés');
+  }
+
   try {
     whatsappService = new WhatsAppService();
     await whatsappService.connect();
   } catch (error) {
     logger.error('Erreur fatale au démarrage:', error.message);
-    // Attendre 10 secondes et réessayer
     logger.info('🔄 Nouvelle tentative dans 10 secondes...');
     setTimeout(main, 10000);
   }
