@@ -1,6 +1,4 @@
 // ===== LOGGER SIMPLE =====
-// Logger sans dépendance externe pino-pretty
-
 const colors = {
   reset: '\x1b[0m',
   red: '\x1b[31m',
@@ -13,10 +11,10 @@ const colors = {
 };
 
 function getTimestamp() {
-  return new Date().toLocaleTimeString('fr-FR', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit' 
+  return new Date().toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
   });
 }
 
@@ -24,15 +22,15 @@ const logger = {
   info: (...args) => {
     console.log(`${colors.cyan}[${getTimestamp()}]${colors.reset} ${colors.green}INFO:${colors.reset}`, ...args);
   },
-  
+
   warn: (...args) => {
     console.log(`${colors.cyan}[${getTimestamp()}]${colors.reset} ${colors.yellow}WARN:${colors.reset}`, ...args);
   },
-  
+
   error: (...args) => {
     console.log(`${colors.cyan}[${getTimestamp()}]${colors.reset} ${colors.red}ERROR:${colors.reset}`, ...args);
   },
-  
+
   debug: (...args) => {
     if (process.env.DEBUG === 'true') {
       console.log(`${colors.cyan}[${getTimestamp()}]${colors.reset} ${colors.magenta}DEBUG:${colors.reset}`, ...args);
