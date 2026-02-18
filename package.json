@@ -1,12 +1,12 @@
 {
-  "name": "chat bot",
+  "name": "chat-bot",
   "version": "1.0.0",
   "description": "Bot WhatsApp IA professionnel avec mémoire conversationnelle",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "pm2:start": "pm2 start index.js --name whatsapp-bot",
+    "pm2:start": "pm2 start ecosystem.config.js",
     "pm2:stop": "pm2 stop whatsapp-bot",
     "pm2:restart": "pm2 restart whatsapp-bot",
     "pm2:logs": "pm2 logs whatsapp-bot"
@@ -16,7 +16,10 @@
     "@supabase/supabase-js": "^2.45.0",
     "dotenv": "^16.4.5",
     "pino": "^9.6.0",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.7.9",
+    "sharp": "^0.33.5",
+    "form-data": "^4.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
